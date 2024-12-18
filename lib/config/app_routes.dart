@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weather_app/features/home/data/repository/current_weather_repo.dart';
+import 'package:weather_app/features/home/data/services/current_weather_service.dart';
+import 'package:weather_app/features/home/presentation/logic/cubit/current_weather_cubit.dart';
 import 'package:weather_app/features/home/presentation/pages/home_page.dart';
-
 
 class Routes {
   static const String splash = '';
@@ -9,7 +12,6 @@ class Routes {
   static const String homePage = '/home';
   static const String detailsPage = '/home/detailsPage';
   static const String searchPage = '/home/searchPage';
-  
 }
 
 class AppRoutes {
@@ -23,8 +25,10 @@ class AppRoutes {
       //   return MaterialPageRoute(builder: (_) => const SignUpPage());
       case Routes.homePage:
         return MaterialPageRoute(
-            builder: (_) => const HomePage());
-      
+            builder: (_) => BlocProvider(
+                  create: (context) => CurrentWeatherCubit(CurrentWeatherRepo(CurrentWeatherService())),
+                  child: const HomePage(),
+                ));
 
       default:
         return undefinedRoute();
