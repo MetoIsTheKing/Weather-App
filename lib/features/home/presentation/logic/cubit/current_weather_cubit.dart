@@ -7,17 +7,29 @@ part 'current_weather_state.dart';
 
 class CurrentWeatherCubit extends Cubit<CurrentWeatherState> {
   final CurrentWeatherRepo currentWeatherRepo;
-  CurrentWeatherCubit(this.currentWeatherRepo) : super(CurrentWeatherInitial());
+  CurrentWeatherCubit({required this.currentWeatherRepo})
+      : super(CurrentWeatherInitial());
 
   Future<void> getCurrentWeather({required String city}) async {
-    emit(CurrentWeatherIsLoading());
     try {
-      final currentWeather =
-          await currentWeatherRepo.getCurrentWeather(city: city);
-      emit(CurrentWeatherLoaded(currentWeather));
+      final hasConnection = await currentWeatherRepo.networkInfo.isConnected;
+      if (hasConnection) {
+        emit(CurrentWeatherHasConnection());
+        emit(CurrentWeatherIsLoading());
+        final currentWeather =
+            await currentWeatherRepo.getCurrentWeather(city: city);
+        emit(CurrentWeatherLoaded(currentWeather));
+      }else{
+        emit(CurrentWeatherConnectionError());
+        final cachedWeather = await currentWeatherRepo.cachingCurrentWeather
+            .getCachedCurrentWeather();
+        emit(CurrentWeatherLoaded(cachedWeather));
+      }
     } catch (e) {
+      
       emit(CurrentWeatherError(errorMessage: 'Failed to fetch weather'));
       debugPrint(e.toString());
     }
   }
+
 }

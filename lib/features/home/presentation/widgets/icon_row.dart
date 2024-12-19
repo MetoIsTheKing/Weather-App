@@ -12,8 +12,9 @@ class IconRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Wrap(
+          clipBehavior: Clip.antiAlias,
           alignment: WrapAlignment.center,
-          spacing: -3,
+          spacing: -10,
           runSpacing: 0,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [

@@ -19,24 +19,12 @@ class _ForecastCardState extends State<ForecastCard> {
           vertical: MediaQuery.of(context).size.height * 0.01,
         ),
         width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height * 0.5,
+        height: MediaQuery.of(context).size.height * 0.3,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20), color: AppColors.appWhite),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ForecastDayTile(
-              day: 'Monday',
-              maxTemp: '30',
-              minTemp: '20',
-              image: 'assets/images/sunn.png',
-            ),
-            ForecastDayTile(
-              day: 'Monday',
-              maxTemp: '30',
-              minTemp: '20',
-              image: 'assets/images/sunn.png',
-            ),
             ForecastDayTile(
               day: 'Monday',
               maxTemp: '30',

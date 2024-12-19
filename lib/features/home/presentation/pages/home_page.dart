@@ -15,12 +15,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool hasConnection = false;
+
   @override
   void initState() {
     super.initState();
+    _checkConnection();
     BlocProvider.of<CurrentWeatherCubit>(context)
         .getCurrentWeather(city: 'London');
-    CurrentWeatherService().setupInterceptors();    
+    CurrentWeatherService().setupInterceptors();
+  }
+
+  Future<void> _checkConnection() async {
+    final connection = await context
+        .read<CurrentWeatherCubit>()
+        .currentWeatherRepo
+        .networkInfo
+        .isConnected;
+    setState(() {
+      hasConnection = connection;
+    });
   }
 
   @override
@@ -54,48 +68,66 @@ class _HomePageState extends State<HomePage> {
           horizontal: MediaQuery.of(context).size.width * 0.04,
           vertical: MediaQuery.of(context).size.height * 0.01,
         ),
-        child: ListView(
-          scrollDirection: Axis.vertical,
-          clipBehavior: Clip.antiAlias,
-          physics: const BouncingScrollPhysics(),
-          children: [
-            BlocBuilder<CurrentWeatherCubit, CurrentWeatherState>(
-              builder: (context, state) {
-                if (state is CurrentWeatherIsLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is CurrentWeatherLoaded) {
-                  final iconUrl =
-                      state.currentWeatherModel.current.condition.icon;
-                  final fullUrl =
-                      iconUrl.startsWith('http') ? iconUrl : 'https:$iconUrl';
-                  return CurrentWeatherCard(
-                    weatherStatus:
-                        state.currentWeatherModel.current.condition.text,
-                    location: state.currentWeatherModel.location.country,
-                    temp: state.currentWeatherModel.current.tempC,
-                    humidity: state.currentWeatherModel.current.humidity,
-                    uv: state.currentWeatherModel.current.uv,
-                    windSpeed: state.currentWeatherModel.current.windKph,
-                    statusIcon: fullUrl,
-                  );
-                } else if (state is CurrentWeatherError) {
-                  return const ErrorTile();
-                } else {
-                  return const Center(child: Text('Empty'));
-                }
-              },
-            ),
-            const SizedBox(height: 25),
-            const Text(
-              'Forecast',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.appDarkBlue),
-            ),
-            const SizedBox(height: 10),
-            const ForecastCard(),
-          ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            _checkConnection();
+            return await BlocProvider.of<CurrentWeatherCubit>(context)
+                .getCurrentWeather(city: 'London');
+          },
+          child: ListView(
+            scrollDirection: Axis.vertical,
+            clipBehavior: Clip.antiAlias,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              BlocConsumer<CurrentWeatherCubit, CurrentWeatherState>(
+                builder: (context, state) {
+                  if (state is CurrentWeatherIsLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is CurrentWeatherLoaded) {
+                    final iconUrl =
+                        state.currentWeatherModel.current.condition.icon;
+                    final fullUrl =
+                        iconUrl.startsWith('http') ? iconUrl : 'https:$iconUrl';
+
+                    return CurrentWeatherCard(
+                      hasConnection: hasConnection, // Pass the value here
+                      weatherStatus:
+                          state.currentWeatherModel.current.condition.text,
+                      location: state.currentWeatherModel.location.country,
+                      temp: state.currentWeatherModel.current.tempC,
+                      humidity: state.currentWeatherModel.current.humidity,
+                      uv: state.currentWeatherModel.current.uv,
+                      windSpeed: state.currentWeatherModel.current.windKph,
+                      statusIcon: fullUrl,
+                    );
+                  } else if (state is CurrentWeatherError) {
+                    return const ErrorTile();
+                  } else {
+                    return const Center(child: Text('Empty'));
+                  }
+                },
+                listener: (BuildContext context, CurrentWeatherState state) {
+                  if (state is CurrentWeatherConnectionError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('No Internet Connection'),
+                      ),
+                    );
+                  }
+                },
+              ),
+              const SizedBox(height: 25),
+              const Text(
+                'Forecast',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.appDarkBlue),
+              ),
+              const SizedBox(height: 10),
+              const ForecastCard(),
+            ],
+          ),
         ),
       ),
     );
