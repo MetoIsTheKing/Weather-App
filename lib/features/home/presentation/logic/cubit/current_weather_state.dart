@@ -17,6 +17,7 @@ final class CurrentWeatherError extends CurrentWeatherState {
 }
 
 final class CurrentWeatherLoaded extends CurrentWeatherState {
+  @override
   final CurrentWeatherModel currentWeatherModel;
   CurrentWeatherLoaded( this.currentWeatherModel);
 }

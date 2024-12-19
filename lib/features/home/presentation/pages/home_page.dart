@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_app/core/app_colors.dart';
 import 'package:weather_app/features/home/data/services/current_weather_service.dart';
 import 'package:weather_app/features/home/presentation/logic/cubit/current_weather_cubit.dart';
+import 'package:weather_app/features/home/presentation/logic/forecast_logic/cubit/forecast_weather_cubit.dart';
 import 'package:weather_app/features/home/presentation/widgets/current_weather_card.dart';
 import 'package:weather_app/features/home/presentation/widgets/error_tile.dart';
 import 'package:weather_app/features/home/presentation/widgets/forecast_card.dart';
@@ -23,6 +24,8 @@ class _HomePageState extends State<HomePage> {
     _checkConnection();
     BlocProvider.of<CurrentWeatherCubit>(context)
         .getCurrentWeather(city: 'London');
+    BlocProvider.of<ForecastWeatherCubit>(context)
+        .getForecastWeather(city: 'London', days: '3');
     CurrentWeatherService().setupInterceptors();
   }
 
@@ -71,13 +74,15 @@ class _HomePageState extends State<HomePage> {
         child: RefreshIndicator(
           onRefresh: () async {
             _checkConnection();
-            return await BlocProvider.of<CurrentWeatherCubit>(context)
+            await BlocProvider.of<ForecastWeatherCubit>(context)
+                .getForecastWeather(city: 'London', days: '3');
+            // ignore: use_build_context_synchronously
+            await BlocProvider.of<CurrentWeatherCubit>(context)
                 .getCurrentWeather(city: 'London');
           },
           child: ListView(
             scrollDirection: Axis.vertical,
             clipBehavior: Clip.antiAlias,
-            physics: const BouncingScrollPhysics(),
             children: [
               BlocConsumer<CurrentWeatherCubit, CurrentWeatherState>(
                 builder: (context, state) {
@@ -90,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                         iconUrl.startsWith('http') ? iconUrl : 'https:$iconUrl';
 
                     return CurrentWeatherCard(
-                      hasConnection: hasConnection, // Pass the value here
+                      hasConnection: hasConnection,
                       weatherStatus:
                           state.currentWeatherModel.current.condition.text,
                       location: state.currentWeatherModel.location.country,

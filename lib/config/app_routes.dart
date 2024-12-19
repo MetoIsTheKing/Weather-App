@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_app/features/home/presentation/logic/cubit/current_weather_cubit.dart';
+import 'package:weather_app/features/home/presentation/logic/forecast_logic/cubit/forecast_weather_cubit.dart';
 import 'package:weather_app/features/home/presentation/pages/home_page.dart';
 import 'package:weather_app/injection.dart' as di;
 
@@ -24,11 +25,18 @@ class AppRoutes {
       //   return MaterialPageRoute(builder: (_) => const SignUpPage());
       case Routes.homePage:
         return MaterialPageRoute(
-            builder: (_) => BlocProvider(
-                  create: (context) => di.currentWeatherDI<CurrentWeatherCubit>(),
-                  child: const HomePage(),
-                  ),
-                );
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) => di.currentWeatherDI<CurrentWeatherCubit>(),
+              ),
+              BlocProvider(
+                create: (context) => di.currentWeatherDI<ForecastWeatherCubit>(),
+              ),
+            ],
+            child: const HomePage(),
+          ),
+        );
 
       default:
         return undefinedRoute();

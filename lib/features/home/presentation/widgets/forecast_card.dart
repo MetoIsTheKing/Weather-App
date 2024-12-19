@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_app/core/app_colors.dart';
+import 'package:weather_app/features/home/presentation/logic/forecast_logic/cubit/forecast_weather_cubit.dart';
 import 'package:weather_app/features/home/presentation/widgets/forecast_day_tile.dart';
 
 class ForecastCard extends StatefulWidget {
@@ -22,28 +24,37 @@ class _ForecastCardState extends State<ForecastCard> {
         height: MediaQuery.of(context).size.height * 0.3,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20), color: AppColors.appWhite),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ForecastDayTile(
-              day: 'Monday',
-              maxTemp: '30',
-              minTemp: '20',
-              image: 'assets/images/sunn.png',
-            ),
-            ForecastDayTile(
-              day: 'Monday',
-              maxTemp: '30',
-              minTemp: '20',
-              image: 'assets/images/sunn.png',
-            ),
-            ForecastDayTile(
-              day: 'Monday',
-              maxTemp: '30',
-              minTemp: '20',
-              image: 'assets/images/sunn.png',
-            ),
-          ],
+        child: BlocBuilder<ForecastWeatherCubit, ForecastWeatherState>(
+          builder: (context, state) {
+            if (state is ForecastWeatherLoaded) {
+              return ListView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: 3,
+                itemBuilder: (context, index) {
+                  return ForecastDayTile(
+                    day: state
+                        .forecastWeatherModel.forecast.forecastday[index].date
+                        .toString(),
+                    maxTemp: state.forecastWeatherModel.forecast
+                        .forecastday[index].day.maxtempC,
+                    minTemp: state.forecastWeatherModel.forecast
+                        .forecastday[index].day.mintempC,
+                  );
+                },
+              );
+            } else if (state is ForecastWeatherError) {
+              return const Center(
+                child: Text('Failed to fetch forecast'),
+              );
+            } else if (state is ForecastWeatherIsLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
         ));
   }
 }
