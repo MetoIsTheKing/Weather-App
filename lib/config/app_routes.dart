@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:weather_app/features/details/presentation/pages/details_page.dart';
 import 'package:weather_app/features/home/presentation/pages/home_page.dart';
 
 
@@ -21,6 +22,9 @@ class AppRoutes {
       //   return MaterialPageRoute(builder: (_) => const LogInPage());
       // case Routes.signUp:
       //   return MaterialPageRoute(builder: (_) => const SignUpPage());
+      case Routes.detailsPage:
+        return MaterialPageRoute(
+            builder: (_) => DetailsPage());
       case Routes.homePage:
         return MaterialPageRoute(
             builder: (_) => const HomePage());
